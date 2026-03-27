@@ -1,15 +1,18 @@
 type CategoryChipProps = {
   label: string;
   active?: boolean;
+  onClick?: () => void;
 };
 
 export default function CategoryChip({
   label,
   active = false,
+  onClick,
 }: CategoryChipProps) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className={`rounded-full px-4 py-2 text-sm transition ${
         active
           ? "bg-amber-500 text-black"

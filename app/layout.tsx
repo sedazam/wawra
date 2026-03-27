@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { PlayerProvider } from "@/components/player/player-context";
 import MiniPlayer from "@/components/player/mini-player";
+import PodcastMenuBar from "@/components/layout/podcast-menu-bar";
 
 export const metadata: Metadata = {
   title: "Wawra",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <PlayerProvider>
           {children}
           <MiniPlayer />
+          <PodcastMenuBar />
         </PlayerProvider>
       </body>
     </html>

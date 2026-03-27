@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { AudioItem } from "@/types";
 import Button from "@/components/ui/button";
@@ -46,8 +47,13 @@ export default function FeaturedHero({ audio }: FeaturedHeroProps) {
         </div>
 
         <div className="relative">
-          <div className="flex aspect-square items-center justify-center rounded-3xl border border-white/10 bg-zinc-800 text-zinc-500">
-            Featured Cover
+          <div className="relative aspect-square overflow-hidden rounded-3xl border border-white/10 bg-zinc-800">
+            <Image
+              src={audio.coverImageUrl}
+              alt={audio.title}
+              fill
+              className="object-cover"
+            />
           </div>
 
           <div className="absolute -bottom-4 -left-4 rounded-2xl border border-white/10 bg-black/70 px-4 py-3 backdrop-blur">

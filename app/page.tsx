@@ -9,8 +9,17 @@ import { audios, categories } from "@/lib/queries/mock-data";
 
 export default function HomePage() {
   const featuredAudio = audios.find((audio) => audio.isFeatured) ?? audios[0];
-  const recentAudios = audios.slice(0, 4);
-  const editorsPicks = audios.slice(1, 4);
+  const recentAudios = [...audios]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 4);
+  // If 'rating' does not exist, use an alternative property such as 'createdAt' or another numeric property.
+  // Replace 'someNumericProperty' with an actual property name from AudioItem, or add 'rating' to AudioItem type and data.
+  const editorsPicks = [...audios]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   return (
     <main className="min-h-screen bg-[#0B0B0F]">

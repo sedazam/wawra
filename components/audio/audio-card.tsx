@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { AudioItem } from "@/types";
 import Badge from "@/components/ui/badge";
@@ -18,11 +19,14 @@ export default function AudioCard({ audio }: AudioCardProps) {
     <div className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition duration-200 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07]">
       <Link href={`/audio/${audio.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-zinc-800">
-          <div className="flex h-full items-center justify-center text-sm text-zinc-500 transition group-hover:scale-105">
-            Cover
-          </div>
+          <Image
+            src={audio.coverImageUrl}
+            alt={audio.title}
+            fill
+            className="object-cover transition duration-300 group-hover:scale-105"
+          />
 
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/60 to-transparent p-4">
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4">
             <span className="rounded-full bg-black/50 px-3 py-1 text-xs text-zinc-200">
               {formatDuration(audio.durationSeconds)}
             </span>
