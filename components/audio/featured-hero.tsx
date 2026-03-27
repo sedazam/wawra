@@ -1,14 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import type { AudioItem } from "@/types";
 import Button from "@/components/ui/button";
 import Badge from "@/components/ui/badge";
 import { formatDuration } from "@/lib/utils/format";
+import { usePlayerContext } from "@/components/player/player-context";
 
 type FeaturedHeroProps = {
   audio: AudioItem;
 };
 
 export default function FeaturedHero({ audio }: FeaturedHeroProps) {
+  const { toggleAudio, currentAudio, isPlaying } = usePlayerContext();
+  const isCurrent = currentAudio?.id === audio.id;
+
   return (
     <section className="py-8 md:py-12">
       <div className="grid items-center gap-8 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[0.06] to-white/[0.02] p-6 md:grid-cols-2 md:p-8 lg:p-10">
@@ -29,7 +35,9 @@ export default function FeaturedHero({ audio }: FeaturedHeroProps) {
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button>Play now</Button>
+            <Button onClick={() => toggleAudio(audio)}>
+              {isCurrent && isPlaying ? "Pause" : "Play now"}
+            </Button>
 
             <Link href={`/audio/${audio.slug}`}>
               <Button variant="secondary">View details</Button>

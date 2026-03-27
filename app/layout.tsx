@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { PlayerProvider } from "@/components/player/player-context";
+import MiniPlayer from "@/components/player/mini-player";
 
 export const metadata: Metadata = {
   title: "Wawra",
@@ -13,7 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PlayerProvider>
+          {children}
+          <MiniPlayer />
+        </PlayerProvider>
+      </body>
     </html>
   );
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import AudioCard from "@/components/audio/audio-card";
+import AudioPlayer from "@/components/player/audio-player";
 import PageContainer from "@/components/layout/page-container";
 import SectionHeader from "@/components/layout/section-header";
 import SiteFooter from "@/components/layout/site-footer";
@@ -33,7 +34,7 @@ export default async function AudioDetailPage({
     .slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-[#0B0B0F]">
+    <main className="min-h-screen bg-[#0B0B0F] pb-28">
       <SiteHeader />
 
       <PageContainer className="py-10 md:py-14">
@@ -63,9 +64,7 @@ export default async function AudioDetailPage({
               <Button variant="secondary">Save for later</Button>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-400">
-              Audio player UI will go here in the next step.
-            </div>
+            <AudioPlayer audio={audio} />
           </div>
         </div>
 
