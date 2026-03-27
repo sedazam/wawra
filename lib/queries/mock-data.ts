@@ -1,0 +1,98 @@
+export const mockData = [];
+import type { AudioItem, Category } from "@/types";
+
+export const categories: Category[] = [
+  {
+    id: "cat-1",
+    name: "Podcasts",
+    slug: "podcasts",
+    description: "Conversations, ideas, and voices.",
+    count: 2,
+  },
+  {
+    id: "cat-2",
+    name: "Stories",
+    slug: "stories",
+    description: "Narratives and spoken storytelling.",
+    count: 2,
+  },
+  {
+    id: "cat-3",
+    name: "Lessons",
+    slug: "lessons",
+    description: "Educational and reflective audio.",
+    count: 2,
+  },
+  {
+    id: "cat-4",
+    name: "Reflections",
+    slug: "reflections",
+    description: "Short thoughtful pieces.",
+    count: 1,
+  },
+];
+
+export const audios: AudioItem[] = [
+  {
+    id: "audio-1",
+    title: "The Power of Patience",
+    slug: "the-power-of-patience",
+    description:
+      "A short reflection on patience, discipline, and calm thinking.",
+    speaker: "Seddiq Azam",
+    categoryId: "cat-4",
+    categoryName: "Reflections",
+    audioUrl: "/sample-audio.mp3",
+    coverImageUrl: "/covers/cover-1.jpg",
+    durationSeconds: 1260,
+    isPublished: true,
+    isFeatured: true,
+    createdAt: "2026-03-20T10:00:00Z",
+  },
+  {
+    id: "audio-2",
+    title: "Modern Voices Episode One",
+    slug: "modern-voices-episode-one",
+    description:
+      "A podcast-style conversation about growth and digital creativity.",
+    speaker: "Wawra Studio",
+    categoryId: "cat-1",
+    categoryName: "Podcasts",
+    audioUrl: "/sample-audio.mp3",
+    coverImageUrl: "/covers/cover-2.jpg",
+    durationSeconds: 2140,
+    isPublished: true,
+    isFeatured: false,
+    createdAt: "2026-03-18T10:00:00Z",
+  },
+  {
+    id: "audio-3",
+    title: "The Lantern Story",
+    slug: "the-lantern-story",
+    description: "A narrated short story with a calm and immersive tone.",
+    speaker: "Wawra Narratives",
+    categoryId: "cat-2",
+    categoryName: "Stories",
+    audioUrl: "/sample-audio.mp3",
+    coverImageUrl: "/covers/cover-3.jpg",
+    durationSeconds: 980,
+    isPublished: true,
+    isFeatured: false,
+    createdAt: "2026-03-14T10:00:00Z",
+  },
+  {
+    id: "audio-4",
+    title: "Learning to Listen Better",
+    slug: "learning-to-listen-better",
+    description: "A lesson on active listening and thoughtful communication.",
+    speaker: "Seddiq Azam",
+    categoryId: "cat-3",
+    categoryName: "Lessons",
+    audioUrl: "/sample-audio.mp3",
+    coverImageUrl: "/covers/cover-4.jpg",
+    durationSeconds: 1520,
+    isPublished: true,
+    isFeatured: false,
+    createdAt: "2026-03-10T10:00:00Z",
+  },
+];
