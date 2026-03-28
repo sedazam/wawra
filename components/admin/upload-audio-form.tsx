@@ -13,6 +13,8 @@ import {
   type AudioFormValues,
   type AudioFormErrors,
 } from "@/lib/validations/audio";
+import { uploadAudioFile, uploadCoverFile } from "@/lib/supabase/storage";
+import { createAudioRecord } from "@/lib/supabase/audios";
 
 type UploadAudioFormProps = {
   categories: Category[];
@@ -33,6 +35,8 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
   const [values, setValues] = useState<AudioFormValues>(initialValues);
   const [errors, setErrors] = useState<AudioFormErrors>({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function updateField<K extends keyof AudioFormValues>(
     field: K,
@@ -49,9 +53,10 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
     }));
 
     setSuccessMessage("");
+    setErrorMessage("");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formErrors = validateAudioForm(values);
@@ -59,14 +64,66 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
 
     if (Object.keys(formErrors).length > 0) {
       setSuccessMessage("");
+      setErrorMessage("");
       return;
     }
 
-    console.log("Form ready for backend:", values);
+    try {
+      setIsSubmitting(true);
+      setSuccessMessage("");
+      setErrorMessage("");
 
-    setSuccessMessage(
-      "Audio draft saved successfully. Backend connection comes next.",
-    );
+      const category = categories.find((item) => item.slug === values.category);
+
+      if (!category) {
+        setErrors((prev) => ({
+          ...prev,
+          category: "Selected category is invalid.",
+        }));
+        return;
+      }
+
+      console.log("Starting audio upload...");
+      const audioUrl = await uploadAudioFile(values.audioFile!);
+      console.log("Audio uploaded:", audioUrl);
+
+      console.log("Starting cover upload...");
+      const coverImageUrl = await uploadCoverFile(values.coverFile!);
+      console.log("Cover uploaded:", coverImageUrl);
+
+      console.log("Creating database record...");
+      const record = await createAudioRecord({
+        values,
+        audioUrl,
+        coverImageUrl,
+        categoryName: category.name,
+      });
+      console.log("Database record created:", record);
+
+      setValues(initialValues);
+      setErrors({});
+      setSuccessMessage("Audio uploaded and saved successfully.");
+    } catch (error: unknown) {
+      console.error("Upload failed:", error);
+
+      let message = "Unknown error occurred.";
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof (error as { message: unknown }).message === "string"
+      ) {
+        message = (error as { message: string }).message;
+      }
+
+      setErrorMessage(message);
+      setSuccessMessage("");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -142,13 +199,10 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-white">Media</h2>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-cols-2)">
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6">
             <p className="text-sm font-medium text-white">Audio File</p>
-            <p className="mt-2 text-sm text-zinc-400">
-              Drag and drop or click to upload MP3 / M4A
-            </p>
-
+            <p className="mt-2 text-sm text-zinc-400">Upload MP3 / M4A</p>
             <Input
               type="file"
               accept=".mp3,.m4a,audio/*"
@@ -157,13 +211,11 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
                 updateField("audioFile", event.target.files?.[0] ?? null)
               }
             />
-
             {values.audioFile ? (
               <p className="mt-3 text-sm text-green-400">
                 Selected: {values.audioFile.name}
               </p>
             ) : null}
-
             {errors.audioFile ? (
               <p className="mt-2 text-sm text-red-400">{errors.audioFile}</p>
             ) : null}
@@ -171,10 +223,7 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
 
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6">
             <p className="text-sm font-medium text-white">Cover Image</p>
-            <p className="mt-2 text-sm text-zinc-400">
-              Upload a square cover image
-            </p>
-
+            <p className="mt-2 text-sm text-zinc-400">Upload cover image</p>
             <Input
               type="file"
               accept=".jpg,.jpeg,.png,.webp,image/*"
@@ -183,13 +232,11 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
                 updateField("coverFile", event.target.files?.[0] ?? null)
               }
             />
-
             {values.coverFile ? (
               <p className="mt-3 text-sm text-green-400">
                 Selected: {values.coverFile.name}
               </p>
             ) : null}
-
             {errors.coverFile ? (
               <p className="mt-2 text-sm text-red-400">{errors.coverFile}</p>
             ) : null}
@@ -204,9 +251,7 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
           <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-4">
             <div>
               <p className="font-medium text-white">Featured Audio</p>
-              <p className="text-sm text-zinc-400">
-                Show this audio prominently on the homepage
-              </p>
+              <p className="text-sm text-zinc-400">Show this on the homepage</p>
             </div>
             <Toggle
               checked={values.isFeatured}
@@ -217,9 +262,7 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
           <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-4">
             <div>
               <p className="font-medium text-white">Published</p>
-              <p className="text-sm text-zinc-400">
-                Make this audio visible to listeners
-              </p>
+              <p className="text-sm text-zinc-400">Visible to listeners</p>
             </div>
             <Toggle
               checked={values.isPublished}
@@ -235,6 +278,12 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
         </div>
       ) : null}
 
+      {errorMessage ? (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          {errorMessage}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-3">
         <Button
           type="button"
@@ -243,12 +292,16 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
             setValues(initialValues);
             setErrors({});
             setSuccessMessage("");
+            setErrorMessage("");
           }}
+          disabled={isSubmitting}
         >
           Reset Form
         </Button>
 
-        <Button type="submit">Publish Audio</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Uploading..." : "Publish Audio"}
+        </Button>
       </div>
     </form>
   );
