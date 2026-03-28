@@ -14,6 +14,8 @@ export async function createCategory(input: {
   slug?: string;
   description?: string;
 }) {
+  const supabase = createClient();
+
   const finalSlug = slugify(input.slug?.trim() || input.name);
 
   if (!input.name.trim()) {
@@ -24,7 +26,6 @@ export async function createCategory(input: {
     throw new Error("Could not generate a valid category slug.");
   }
 
-  const supabase = createClient();
   const { data, error } = await supabase
     .from("categories")
     .insert({
@@ -40,4 +41,50 @@ export async function createCategory(input: {
   }
 
   return data;
+}
+
+export async function updateCategory(input: {
+  id: string;
+  name: string;
+  slug?: string;
+  description?: string;
+}) {
+  const supabase = createClient();
+
+  const finalSlug = slugify(input.slug?.trim() || input.name);
+
+  if (!input.name.trim()) {
+    throw new Error("Category name is required.");
+  }
+
+  if (!finalSlug) {
+    throw new Error("Could not generate a valid category slug.");
+  }
+
+  const { data, error } = await supabase
+    .from("categories")
+    .update({
+      name: input.name.trim(),
+      slug: finalSlug,
+      description: input.description?.trim() || null,
+    })
+    .eq("id", input.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function deleteCategory(id: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+
+  if (error) {
+    throw error;
+  }
 }

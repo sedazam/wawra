@@ -1,3 +1,32 @@
+export async function getPublishedAudiosByCategorySlug(slug: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("audios")
+    .select("*")
+    .eq("category_slug", slug)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+export async function getCategoryBySlug(slug: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
 export async function getAllAudios() {
   const supabase = createClient();
   const { data, error } = await supabase

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Textarea from "@/components/ui/textarea";
-import { createCategory } from "@/lib/supabase/categories";
+import { createCategory, updateCategory } from "@/lib/supabase/categories";
 
 type CategoryRecord = {
   id: string;
@@ -15,16 +15,34 @@ type CategoryRecord = {
 };
 
 type CategoryFormProps = {
+  initialCategory?: CategoryRecord | null;
   onCreated?: (category: CategoryRecord) => void;
+  onUpdated?: (category: CategoryRecord) => void;
+  onCancelEdit?: () => void;
 };
 
-export default function CategoryForm({ onCreated }: CategoryFormProps) {
+export default function CategoryForm({
+  initialCategory = null,
+  onCreated,
+  onUpdated,
+  onCancelEdit,
+}: CategoryFormProps) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isEditMode = Boolean(initialCategory);
+
+  useEffect(() => {
+    setName(initialCategory?.name ?? "");
+    setSlug(initialCategory?.slug ?? "");
+    setDescription(initialCategory?.description ?? "");
+    setErrorMessage("");
+    setSuccessMessage("");
+  }, [initialCategory]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,22 +58,33 @@ export default function CategoryForm({ onCreated }: CategoryFormProps) {
     try {
       setIsSubmitting(true);
 
-      const created = await createCategory({
-        name,
-        slug,
-        description,
-      });
+      if (isEditMode && initialCategory) {
+        const updated = await updateCategory({
+          id: initialCategory.id,
+          name,
+          slug,
+          description,
+        });
 
-      setName("");
-      setSlug("");
-      setDescription("");
-      setSuccessMessage("Category created successfully.");
+        setSuccessMessage("Category updated successfully.");
+        onUpdated?.(updated);
+      } else {
+        const created = await createCategory({
+          name,
+          slug,
+          description,
+        });
 
-      onCreated?.(created);
+        setName("");
+        setSlug("");
+        setDescription("");
+        setSuccessMessage("Category created successfully.");
+        onCreated?.(created);
+      }
     } catch (error: unknown) {
-      console.error("Category creation failed:", error);
+      console.error("Category save failed:", error);
 
-      let message = "Category creation failed.";
+      let message = "Category save failed.";
 
       if (error instanceof Error) {
         message = error.message;
@@ -76,7 +105,9 @@ export default function CategoryForm({ onCreated }: CategoryFormProps) {
 
   return (
     <Card className="p-6">
-      <h2 className="text-lg font-semibold text-white">Add Category</h2>
+      <h2 className="text-lg font-semibold text-white">
+        {isEditMode ? "Edit Category" : "Add Category"}
+      </h2>
 
       <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
         <div>
@@ -124,9 +155,19 @@ export default function CategoryForm({ onCreated }: CategoryFormProps) {
           </div>
         ) : null}
 
-        <div>
+        <div className="flex gap-3">
+          {isEditMode ? (
+            <Button type="button" variant="secondary" onClick={onCancelEdit}>
+              Cancel
+            </Button>
+          ) : null}
+
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Category"}
+            {isSubmitting
+              ? "Saving..."
+              : isEditMode
+                ? "Save Changes"
+                : "Save Category"}
           </Button>
         </div>
       </form>
