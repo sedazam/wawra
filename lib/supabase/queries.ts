@@ -1,3 +1,16 @@
+export async function getAllAudios() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("audios")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
 import { createClient } from "@/lib/supabase/client";
 
 export async function getAudioById(id: string) {
