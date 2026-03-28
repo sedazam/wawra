@@ -73,6 +73,7 @@ export async function getRelatedPublishedAudios(
 }
 
 export async function getCategories() {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
@@ -86,6 +87,7 @@ export async function getCategories() {
 }
 
 export async function getCategoryBySlug(slug: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")

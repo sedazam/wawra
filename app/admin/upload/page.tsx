@@ -1,9 +1,11 @@
+import { requireAdmin } from "@/lib/auth/require-admin";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import UploadAudioForm from "@/components/admin/upload-audio-form";
 import PageContainer from "@/components/layout/page-container";
 import { categories } from "@/lib/queries/mock-data";
 
-export default function AdminUploadPage() {
+export default async function AdminUploadPage() {
+  await requireAdmin();
   return (
     <main className="min-h-screen bg-[#0B0B0F]">
       <PageContainer className="py-8 md:py-10">

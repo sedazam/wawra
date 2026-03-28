@@ -1,9 +1,11 @@
+import { requireAdmin } from "@/lib/auth/require-admin";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import CategoriesManager from "@/components/admin/categories-manager";
 import PageContainer from "@/components/layout/page-container";
 import { getCategories } from "@/lib/supabase/queries";
 
 export default async function AdminCategoriesPage() {
+  await requireAdmin();
   const categoriesRaw = await getCategories();
 
   const categories = categoriesRaw.map((category) => ({

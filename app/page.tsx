@@ -1,3 +1,4 @@
+import SectionHeader from "@/components/layout/section-header";
 <section className="py-8 md:py-10">
   <SectionHeader title="Categories" />
 

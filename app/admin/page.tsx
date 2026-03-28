@@ -1,4 +1,6 @@
-export default function AdminPage() {
+import { requireAdmin } from "@/lib/auth/require-admin";
+export default async function AdminPage() {
+  await requireAdmin();
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <a

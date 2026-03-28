@@ -1,9 +1,11 @@
+import { requireAdmin } from "@/lib/auth/require-admin";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import AudioTable from "@/components/admin/audio-table";
 import PageContainer from "@/components/layout/page-container";
 import { getAllAudios } from "@/lib/supabase/queries";
 
 export default async function AdminAudiosPage() {
+  await requireAdmin();
   const audiosRaw = await getAllAudios();
 
   const audios = audiosRaw.map((audio) => ({

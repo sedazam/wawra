@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export async function uploadAudioFile(file: File) {
   const supabase = createClient();
+
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
@@ -19,6 +20,7 @@ export async function uploadAudioFile(file: File) {
 
 export async function uploadCoverFile(file: File) {
   const supabase = createClient();
+
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
 
