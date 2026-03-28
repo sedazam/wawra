@@ -5,28 +5,22 @@ import PageContainer from "@/components/layout/page-container";
 import SectionHeader from "@/components/layout/section-header";
 import SiteFooter from "@/components/layout/site-footer";
 import SiteHeader from "@/components/layout/site-header";
-import { audios, categories } from "@/lib/queries/mock-data";
+import { getPublishedAudios, getCategories } from "@/lib/supabase/queries";
 
-export default function HomePage() {
-  const featuredAudio = audios.find((audio) => audio.isFeatured) ?? audios[0];
-  const recentAudios = [...audios]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 4);
-  // If 'rating' does not exist, use an alternative property such as 'createdAt' or another numeric property.
-  // Replace 'someNumericProperty' with an actual property name from AudioItem, or add 'rating' to AudioItem type and data.
-  const editorsPicks = [...audios]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+export default async function HomePage() {
+  const audios = await getPublishedAudios();
+  const categories = await getCategories();
+
+  const featuredAudio = audios.find((audio) => audio.is_featured) ?? audios[0];
+  const recentAudios = audios.slice(0, 4);
+  const editorsPicks = audios.slice(1, 4);
 
   return (
-    <main className="min-h-screen bg-[#0B0B0F]">
+    <main className="min-h-screen bg-[#0B0B0F] pb-28">
       <SiteHeader />
 
       <PageContainer>
-        <FeaturedHero audio={featuredAudio} />
+        {featuredAudio ? <FeaturedHero audio={featuredAudio} /> : null}
 
         <section className="py-8 md:py-10">
           <SectionHeader
@@ -47,7 +41,16 @@ export default function HomePage() {
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
+              <CategoryCard
+                key={category.id}
+                category={{
+                  id: category.id,
+                  name: category.name,
+                  slug: category.slug,
+                  description: category.description,
+                  count: 0,
+                }}
+              />
             ))}
           </div>
         </section>

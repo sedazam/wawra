@@ -104,7 +104,12 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
       setErrors({});
       setSuccessMessage("Audio uploaded and saved successfully.");
     } catch (error: unknown) {
-      console.error("Upload failed:", error);
+      // Improved error logging for debugging
+      try {
+        console.error("Upload failed:", error, JSON.stringify(error));
+      } catch (jsonErr) {
+        console.error("Upload failed (non-serializable error):", error);
+      }
 
       let message = "Unknown error occurred.";
 
@@ -117,6 +122,8 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
         typeof (error as { message: unknown }).message === "string"
       ) {
         message = (error as { message: string }).message;
+      } else if (typeof error === "object" && error !== null) {
+        message = JSON.stringify(error);
       }
 
       setErrorMessage(message);

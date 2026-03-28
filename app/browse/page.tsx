@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import AudioCard from "@/components/audio/audio-card";
 import CategoryChip from "@/components/category/category-chip";
 import PageContainer from "@/components/layout/page-container";
@@ -7,10 +8,33 @@ import SiteFooter from "@/components/layout/site-footer";
 import SiteHeader from "@/components/layout/site-header";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
-import { audios, categories } from "@/lib/queries/mock-data";
 import { useAudioFilters } from "@/hooks/use-audio-filters";
+import { supabase } from "@/lib/supabase/client";
 
 export default function BrowsePage() {
+  const [audios, setAudios] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: audioData } = await supabase
+        .from("audios")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      const { data: categoryData } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name", { ascending: true });
+
+      setAudios(audioData ?? []);
+      setCategories(categoryData ?? []);
+    }
+
+    loadData();
+  }, []);
+
   const {
     search,
     setSearch,
@@ -19,7 +43,19 @@ export default function BrowsePage() {
     sort,
     setSort,
     filteredAudios,
-  } = useAudioFilters(audios);
+  } = useAudioFilters(
+    audios.map((audio) => ({
+      ...audio,
+      categoryName: audio.category_name,
+      categoryId: audio.category_slug,
+      coverImageUrl: audio.cover_image_url,
+      audioUrl: audio.audio_url,
+      durationSeconds: audio.duration_seconds,
+      isPublished: audio.is_published,
+      isFeatured: audio.is_featured,
+      createdAt: audio.created_at,
+    })),
+  );
 
   return (
     <main className="min-h-screen bg-[#0B0B0F] pb-28">
