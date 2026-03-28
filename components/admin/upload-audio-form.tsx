@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
@@ -31,12 +31,62 @@ const initialValues: AudioFormValues = {
   coverFile: null,
 };
 
+function formatDuration(seconds: number) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
 export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
   const [values, setValues] = useState<AudioFormValues>(initialValues);
   const [errors, setErrors] = useState<AudioFormErrors>({});
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [detectedDuration, setDetectedDuration] = useState<number | null>(null);
+
+  const coverPreviewUrl = useMemo(() => {
+    if (!values.coverFile) return "";
+    return URL.createObjectURL(values.coverFile);
+  }, [values.coverFile]);
+
+  useEffect(() => {
+    return () => {
+      if (coverPreviewUrl) {
+        URL.revokeObjectURL(coverPreviewUrl);
+      }
+    };
+  }, [coverPreviewUrl]);
+
+  useEffect(() => {
+    if (!values.audioFile) {
+      setDetectedDuration(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(values.audioFile);
+    const audio = document.createElement("audio");
+
+    const handleLoadedMetadata = () => {
+      setDetectedDuration(audio.duration || 0);
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    const handleError = () => {
+      setDetectedDuration(null);
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("error", handleError);
+    audio.src = objectUrl;
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("error", handleError);
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [values.audioFile]);
 
   function updateField<K extends keyof AudioFormValues>(
     field: K,
@@ -83,33 +133,23 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
         return;
       }
 
-      console.log("Starting audio upload...");
       const audioUrl = await uploadAudioFile(values.audioFile!);
-      console.log("Audio uploaded:", audioUrl);
-
-      console.log("Starting cover upload...");
       const coverImageUrl = await uploadCoverFile(values.coverFile!);
-      console.log("Cover uploaded:", coverImageUrl);
 
-      console.log("Creating database record...");
-      const record = await createAudioRecord({
+      await createAudioRecord({
         values,
         audioUrl,
         coverImageUrl,
         categoryName: category.name,
+        durationSeconds: detectedDuration ? Math.floor(detectedDuration) : 0,
       });
-      console.log("Database record created:", record);
 
       setValues(initialValues);
       setErrors({});
+      setDetectedDuration(null);
       setSuccessMessage("Audio uploaded and saved successfully.");
     } catch (error: unknown) {
-      // Improved error logging for debugging
-      try {
-        console.error("Upload failed:", error, JSON.stringify(error));
-      } catch (jsonErr) {
-        console.error("Upload failed (non-serializable error):", error);
-      }
+      console.error("Upload failed:", error);
 
       let message = "Unknown error occurred.";
 
@@ -122,8 +162,6 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
         typeof (error as { message: unknown }).message === "string"
       ) {
         message = (error as { message: string }).message;
-      } else if (typeof error === "object" && error !== null) {
-        message = JSON.stringify(error);
       }
 
       setErrorMessage(message);
@@ -206,7 +244,7 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-white">Media</h2>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2)">
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6">
             <p className="text-sm font-medium text-white">Audio File</p>
             <p className="mt-2 text-sm text-zinc-400">Upload MP3 / M4A</p>
@@ -219,9 +257,16 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
               }
             />
             {values.audioFile ? (
-              <p className="mt-3 text-sm text-green-400">
-                Selected: {values.audioFile.name}
-              </p>
+              <div className="mt-3 space-y-1 text-sm">
+                <p className="text-green-400">
+                  Selected: {values.audioFile.name}
+                </p>
+                {detectedDuration !== null ? (
+                  <p className="text-zinc-400">
+                    Duration: {formatDuration(detectedDuration)}
+                  </p>
+                ) : null}
+              </div>
             ) : null}
             {errors.audioFile ? (
               <p className="mt-2 text-sm text-red-400">{errors.audioFile}</p>
@@ -239,11 +284,23 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
                 updateField("coverFile", event.target.files?.[0] ?? null)
               }
             />
+
+            {coverPreviewUrl ? (
+              <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+                <img
+                  src={coverPreviewUrl}
+                  alt="Cover preview"
+                  className="aspect-square w-full object-cover"
+                />
+              </div>
+            ) : null}
+
             {values.coverFile ? (
               <p className="mt-3 text-sm text-green-400">
                 Selected: {values.coverFile.name}
               </p>
             ) : null}
+
             {errors.coverFile ? (
               <p className="mt-2 text-sm text-red-400">{errors.coverFile}</p>
             ) : null}
@@ -300,6 +357,7 @@ export default function UploadAudioForm({ categories }: UploadAudioFormProps) {
             setErrors({});
             setSuccessMessage("");
             setErrorMessage("");
+            setDetectedDuration(null);
           }}
           disabled={isSubmitting}
         >

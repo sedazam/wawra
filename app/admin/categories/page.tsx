@@ -1,10 +1,18 @@
 import AdminSidebar from "@/components/admin/admin-sidebar";
-import CategoryForm from "@/components/admin/category-form";
-import Card from "@/components/ui/card";
+import CategoriesManager from "@/components/admin/categories-manager";
 import PageContainer from "@/components/layout/page-container";
-import { categories } from "@/lib/queries/mock-data";
+import { getCategories } from "@/lib/supabase/queries";
 
-export default function AdminCategoriesPage() {
+export default async function AdminCategoriesPage() {
+  const categoriesRaw = await getCategories();
+
+  const categories = categoriesRaw.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+  }));
+
   return (
     <main className="min-h-screen bg-[#0B0B0F]">
       <PageContainer className="py-8 md:py-10">
@@ -21,34 +29,7 @@ export default function AdminCategoriesPage() {
               </h1>
             </div>
 
-            <CategoryForm />
-
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-white">
-                Existing Categories
-              </h2>
-
-              <div className="mt-5 space-y-3">
-                {categories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-                  >
-                    <div>
-                      <p className="font-medium text-white">{category.name}</p>
-                      <p className="text-sm text-zinc-400">{category.slug}</p>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="text-sm text-amber-400 hover:text-amber-300"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            <CategoriesManager initialCategories={categories} />
           </section>
         </div>
       </PageContainer>

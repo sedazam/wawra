@@ -3,7 +3,11 @@ import AudioCard from "@/components/audio/audio-card";
 import PageContainer from "@/components/layout/page-container";
 import SiteFooter from "@/components/layout/site-footer";
 import SiteHeader from "@/components/layout/site-header";
-import { audios, categories } from "@/lib/queries/mock-data";
+import {
+  getCategoryBySlug,
+  getPublishedAudiosByCategorySlug,
+} from "@/lib/supabase/queries";
+import { mapSupabaseAudio } from "@/lib/utils/map-audio";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -14,18 +18,20 @@ type CategoryPageProps = {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
 
-  const category = categories.find((item) => item.slug === slug);
+  let category;
+  let audiosRaw;
 
-  if (!category) {
+  try {
+    category = await getCategoryBySlug(slug);
+    audiosRaw = await getPublishedAudiosByCategorySlug(slug);
+  } catch {
     notFound();
   }
 
-  const filteredAudios = audios.filter(
-    (audio) => audio.categoryId === category.id,
-  );
+  const audios = audiosRaw.map(mapSupabaseAudio);
 
   return (
-    <main className="min-h-screen bg-[#0B0B0F]">
+    <main className="min-h-screen bg-[#0B0B0F] pb-28">
       <SiteHeader />
 
       <PageContainer className="py-10 md:py-14">
@@ -36,14 +42,27 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <h1 className="text-3xl font-bold text-white md:text-4xl">
             {category.name}
           </h1>
-          <p className="max-w-2xl text-zinc-400">{category.description}</p>
+          <p className="max-w-2xl text-zinc-400">
+            {category.description || "Browse all audio in this category."}
+          </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {filteredAudios.map((audio) => (
-            <AudioCard key={audio.id} audio={audio} />
-          ))}
-        </div>
+        {audios.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {audios.map((audio) => (
+              <AudioCard key={audio.id} audio={audio} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+            <h2 className="text-lg font-semibold text-white">
+              No audio in this category yet
+            </h2>
+            <p className="mt-2 text-sm text-zinc-400">
+              Add some published audio to see it here.
+            </p>
+          </div>
+        )}
       </PageContainer>
 
       <SiteFooter />

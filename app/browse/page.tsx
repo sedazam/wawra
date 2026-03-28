@@ -9,27 +9,34 @@ import SiteHeader from "@/components/layout/site-header";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
 import { useAudioFilters } from "@/hooks/use-audio-filters";
-import { supabase } from "@/lib/supabase/client";
+
+import { createClient } from "@/lib/supabase/client";
 
 export default function BrowsePage() {
   const [audios, setAudios] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
     async function loadData() {
-      const { data: audioData } = await supabase
-        .from("audios")
-        .select("*")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
+      try {
+        const { data: audioData } = await supabase
+          .from("audios")
+          .select("*")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false });
 
-      const { data: categoryData } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name", { ascending: true });
+        const { data: categoryData } = await supabase
+          .from("categories")
+          .select("*")
+          .order("name", { ascending: true });
 
-      setAudios(audioData ?? []);
-      setCategories(categoryData ?? []);
+        setAudios(audioData ?? []);
+        setCategories(categoryData ?? []);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     loadData();
@@ -109,23 +116,34 @@ export default function BrowsePage() {
           ))}
         </div>
 
-        <p className="mb-8 text-sm text-zinc-500">
-          {filteredAudios.length} result{filteredAudios.length === 1 ? "" : "s"}
-        </p>
-
-        {filteredAudios.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredAudios.map((audio) => (
-              <AudioCard key={audio.id} audio={audio} />
-            ))}
+        {isLoading ? (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-sm text-zinc-400">
+            Loading audio library...
           </div>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-            <h2 className="text-lg font-semibold text-white">No audio found</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Try a different search term or category.
+          <>
+            <p className="mb-8 text-sm text-zinc-500">
+              {filteredAudios.length} result
+              {filteredAudios.length === 1 ? "" : "s"}
             </p>
-          </div>
+
+            {filteredAudios.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {filteredAudios.map((audio) => (
+                  <AudioCard key={audio.id} audio={audio} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+                <h2 className="text-lg font-semibold text-white">
+                  No audio found
+                </h2>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Try a different search term or category.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </PageContainer>
 
