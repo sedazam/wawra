@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-const ADMIN_EMAILS = ["your-admin-email@example.com"];
+const ADMIN_EMAILS = ["sedazam@gmail.com"];
 
 export async function requireAdmin() {
   const supabase = await createClient();

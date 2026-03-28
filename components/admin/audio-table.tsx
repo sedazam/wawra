@@ -6,6 +6,7 @@ import { formatDate, formatDuration } from "@/lib/utils/format";
 import Button from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import { deleteAudioById, updateAudioFlags } from "@/lib/supabase/admin-audios";
+import Link from "next/link";
 
 type AudioTableProps = {
   audios: AudioItem[];
@@ -170,6 +171,12 @@ export default function AudioTable({ audios: initialAudios }: AudioTableProps) {
 
                   <td className="px-5 py-4">
                     <div className="flex gap-2">
+                      <Link href={`/admin/audios/${audio.id}/edit`}>
+                        <Button variant="secondary" type="button">
+                          Edit
+                        </Button>
+                      </Link>
+
                       <Button
                         variant="ghost"
                         type="button"
