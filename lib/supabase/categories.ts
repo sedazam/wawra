@@ -69,14 +69,13 @@ export async function updateCategory(input: {
       description: input.description?.trim() || null,
     })
     .eq("id", input.id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return data ? data[0] : null;
 }
 
 export async function deleteCategory(id: string) {

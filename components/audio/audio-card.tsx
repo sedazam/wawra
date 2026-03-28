@@ -23,6 +23,7 @@ export default function AudioCard({ audio }: AudioCardProps) {
             src={audio.coverImageUrl}
             alt={audio.title}
             fill
+            loading="eager"
             className="object-cover transition duration-300 group-hover:scale-105"
           />
 

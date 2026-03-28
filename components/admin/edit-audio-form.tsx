@@ -94,6 +94,7 @@ export default function EditAudioForm({
       });
 
       setSuccessMessage("Audio updated successfully.");
+      router.push("/admin/audios");
       router.refresh();
     } catch (error: unknown) {
       console.error("Audio update failed:", error);

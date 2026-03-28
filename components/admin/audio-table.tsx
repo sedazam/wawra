@@ -18,7 +18,7 @@ export default function AudioTable({ audios: initialAudios }: AudioTableProps) {
 
   async function handleDelete(id: string) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this audio?",
+      "Are you sure you want to delete this audio? This will also remove its uploaded audio file and cover image.",
     );
 
     if (!confirmed) return;

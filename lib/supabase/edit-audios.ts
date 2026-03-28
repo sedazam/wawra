@@ -40,9 +40,13 @@ export async function updateAudioMetadata(input: {
       is_featured: input.isFeatured,
     })
     .eq("id", input.id)
-    .select()
-    .single();
+    .select();
 
+  if (error) {
+    throw error;
+  }
+
+  return data ? data[0] : null;
   if (error) {
     throw error;
   }
